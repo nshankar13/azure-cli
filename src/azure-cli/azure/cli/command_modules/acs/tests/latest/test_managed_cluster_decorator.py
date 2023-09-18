@@ -5371,11 +5371,11 @@ class AKSManagedClusterCreateDecoratorTestCase(unittest.TestCase):
         self.assertEqual(dec_mc, dec_1.context.mc)
 
     def test_set_up_azure_service_mesh(self):
-        dec_1 = AKSPreviewManagedClusterCreateDecorator(
+        dec_1 = AKSManagedClusterCreateDecorator(
             self.cmd,
             self.client,
             {},
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_1 = self.models.ManagedCluster(location="test_location")
         dec_1.context.attach_mc(mc_1)
@@ -5383,13 +5383,13 @@ class AKSManagedClusterCreateDecoratorTestCase(unittest.TestCase):
         ground_truth_mc_1 = self.models.ManagedCluster(location="test_location")
         self.assertEqual(dec_mc_1, ground_truth_mc_1)
 
-        dec_2 = AKSPreviewManagedClusterCreateDecorator(
+        dec_2 = AKSManagedClusterCreateDecorator(
             self.cmd,
             self.client,
             {
                 "enable_azure_service_mesh": True,
             },
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_2 = self.models.ManagedCluster(location="test_location")
         dec_2.context.attach_mc(mc_2)
@@ -7702,13 +7702,13 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
         self.client.get.assert_called_once_with("test_rg_name", "test_cluster")
 
     def test_update_service_mesh_profile(self):
-        dec_1 = AKSPreviewManagedClusterUpdateDecorator(
+        dec_1 = AKSManagedClusterUpdateDecorator(
             self.cmd,
             self.client,
             {
                 "enable_azure_service_mesh": True,
             },
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_1 = self.models.ManagedCluster(
             location="test_location",
@@ -7724,7 +7724,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
         )
         self.assertEqual(dec_mc_1, ground_truth_mc_1)
 
-        dec_2 = AKSPreviewManagedClusterUpdateDecorator(
+        dec_2 = AKSManagedClusterUpdateDecorator(
             self.cmd,
             self.client,
             {
@@ -7732,7 +7732,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
                 "enable_ingress_gateway": True,
                 "ingress_gateway_type": "Internal",
             },
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_2 = self.models.ManagedCluster(
             location="test_location",
@@ -7757,7 +7757,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
         )
         self.assertEqual(dec_mc_2, ground_truth_mc_2)
 
-        dec_3 = AKSPreviewManagedClusterUpdateDecorator(
+        dec_3 = AKSManagedClusterUpdateDecorator(
             self.cmd,
             self.client,
             {
@@ -7768,7 +7768,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
                 "root_cert_object_name": "my-root-cert",
                 "cert_chain_object_name": "my-cert-chain",
             },
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_3 = self.models.ManagedCluster(
             location="test_location",
@@ -7794,7 +7794,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
         )
         self.assertEqual(dec_mc_3, ground_truth_mc_3)
 
-        dec_4 = AKSPreviewManagedClusterUpdateDecorator(
+        dec_4 = AKSManagedClusterUpdateDecorator(
             self.cmd,
             self.client,
             {
@@ -7802,7 +7802,7 @@ class AKSManagedClusterUpdateDecoratorTestCase(unittest.TestCase):
                 "enable_egress_gateway": True,
                 "egress_gateway_nodeselector": "istio=egress",
             },
-            CUSTOM_MGMT_AKS_PREVIEW,
+            ResourceType.MGMT_CONTAINERSERVICE,
         )
         mc_4 = self.models.ManagedCluster(
             location="test_location",

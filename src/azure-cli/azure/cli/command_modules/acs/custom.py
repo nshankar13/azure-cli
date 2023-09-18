@@ -2719,7 +2719,7 @@ def _aks_mesh_update(
         cmd=cmd,
         client=client,
         raw_parameters=raw_parameters,
-        resource_type=CUSTOM_MGMT_AKS_PREVIEW,
+        resource_type=ResourceType.MGMT_CONTAINERSERVICE,
     )
 
     try:
