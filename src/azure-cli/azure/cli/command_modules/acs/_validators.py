@@ -379,6 +379,30 @@ def validate_ppg(namespace):
             raise CLIError("--ppg is not a valid Azure resource ID.")
 
 
+def validate_egress_gtw_nodeselector(namespace):
+    """Validates that provided node selector is a valid format"""
+
+    if not hasattr(namespace, 'egx_gtw_nodeselector'):
+        return
+
+    labels = namespace.egx_gtw_nodeselector
+
+    if labels is None:
+        # no specify any labels
+        namespace.egx_gtw_nodeselector = {}
+        return
+
+    if isinstance(labels, list):
+        labels_dict = {}
+        for item in labels:
+            labels_dict.update(validate_label(item))
+        after_validation_labels = labels_dict
+    else:
+        after_validation_labels = validate_label(labels)
+
+    namespace.egx_gtw_nodeselector = after_validation_labels
+
+
 def validate_nodepool_labels(namespace):
     """Validates that provided node labels is a valid format"""
 

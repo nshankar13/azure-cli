@@ -13,6 +13,8 @@ from azure.cli.command_modules.acs._completers import (
 from azure.cli.command_modules.acs._consts import (
     CONST_AZURE_KEYVAULT_NETWORK_ACCESS_PRIVATE,
     CONST_AZURE_KEYVAULT_NETWORK_ACCESS_PUBLIC,
+    CONST_AZURE_SERVICE_MESH_INGRESS_MODE_EXTERNAL,
+    CONST_AZURE_SERVICE_MESH_INGRESS_MODE_INTERNAL,
     CONST_GPU_INSTANCE_PROFILE_MIG1_G, CONST_GPU_INSTANCE_PROFILE_MIG2_G,
     CONST_GPU_INSTANCE_PROFILE_MIG3_G, CONST_GPU_INSTANCE_PROFILE_MIG4_G,
     CONST_GPU_INSTANCE_PROFILE_MIG7_G, CONST_LOAD_BALANCER_SKU_BASIC,
@@ -47,8 +49,8 @@ from azure.cli.command_modules.acs._validators import (
     validate_azure_keyvault_kms_key_vault_resource_id,
     validate_azuremonitorworkspaceresourceid, validate_create_parameters,
     validate_credential_format, validate_defender_config_parameter,
-    validate_defender_disable_and_enable_parameters, validate_eviction_policy,
-    validate_grafanaresourceid, validate_host_group_id,
+    validate_defender_disable_and_enable_parameters, validate_egress_gtw_nodeselector,
+    validate_eviction_policy, validate_grafanaresourceid, validate_host_group_id,
     validate_image_cleaner_enable_disable_mutually_exclusive,
     validate_ip_ranges, validate_k8s_version,
     validate_keyvault_secrets_provider_disable_and_enable_parameters,
@@ -142,6 +144,12 @@ node_os_upgrade_channels = [
 dev_space_endpoint_types = ['Public', 'Private', 'None']
 
 keyvault_network_access_types = [CONST_AZURE_KEYVAULT_NETWORK_ACCESS_PUBLIC, CONST_AZURE_KEYVAULT_NETWORK_ACCESS_PRIVATE]
+
+# azure service mesh
+ingress_gateway_types = [
+    CONST_AZURE_SERVICE_MESH_INGRESS_MODE_EXTERNAL,
+    CONST_AZURE_SERVICE_MESH_INGRESS_MODE_INTERNAL,
+]
 
 gpu_instance_profiles = [
     CONST_GPU_INSTANCE_PROFILE_MIG1_G,
@@ -266,6 +274,10 @@ def load_arguments(self, _):
         c.argument('azure_keyvault_kms_key_vault_network_access', arg_type=get_enum_type(keyvault_network_access_types))
         c.argument('azure_keyvault_kms_key_vault_resource_id', validator=validate_azure_keyvault_kms_key_vault_resource_id)
         c.argument('enable_image_cleaner', action='store_true')
+        c.argument('enable_azure_service_mesh',
+                   options_list=["--enable-azure-service-mesh", "--enable-asm"],
+                   action='store_true',
+                   is_preview=True)
         c.argument('image_cleaner_interval_hours', type=int)
         c.argument('http_proxy_config')
         c.argument('enable_keda', action='store_true')
@@ -617,6 +629,25 @@ def load_arguments(self, _):
         with self.argument_context(scope) as c:
             c.argument('snapshot_name', options_list=['--name', '-n'], required=True, validator=validate_snapshot_name, help='The nodepool snapshot name.')
             c.argument('yes', options_list=['--yes', '-y'], help='Do not prompt for confirmation.', action='store_true')
+    
+    with self.argument_context('aks mesh enable-ingress-gateway') as c:
+        c.argument('ingress_gateway_type',
+                   arg_type=get_enum_type(ingress_gateway_types))
+
+    with self.argument_context('aks mesh disable-ingress-gateway') as c:
+        c.argument('ingress_gateway_type',
+                   arg_type=get_enum_type(ingress_gateway_types))
+
+    with self.argument_context('aks mesh enable-egress-gateway') as c:
+        c.argument('egx_gtw_nodeselector', nargs='*', validator=validate_egress_gtw_nodeselector, required=False, default=None,
+                   options_list=["--egress-gateway-nodeselector", "--egx-gtw-ns"])
+
+    with self.argument_context('aks mesh enable') as c:
+        c.argument('key_vault_id')
+        c.argument('ca_cert_object_name')
+        c.argument('ca_key_object_name')
+        c.argument('root_cert_object_name')
+        c.argument('cert_chain_object_name')
 
 
 def _get_default_install_location(exe_name):

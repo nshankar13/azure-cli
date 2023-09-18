@@ -605,6 +605,8 @@ def aks_create(
     ksm_metric_annotations_allow_list=None,
     grafana_resource_id=None,
     enable_windows_recording_rules=False,
+    # azure service mesh
+    enable_azure_service_mesh=None,
     # misc
     yes=False,
     no_wait=False,
@@ -2583,3 +2585,147 @@ def aks_nodepool_snapshot_list(cmd, client, resource_group_name=None):  # pylint
 
 def aks_rotate_service_account_signing_keys(cmd, client, resource_group_name, name, no_wait=True):
     return sdk_no_wait(no_wait, client.begin_rotate_service_account_signing_keys, resource_group_name, name)
+
+
+def aks_mesh_enable(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        key_vault_id=None,
+        ca_cert_object_name=None,
+        ca_key_object_name=None,
+        root_cert_object_name=None,
+        cert_chain_object_name=None
+):
+    instance = client.get(resource_group_name, name)
+    addon_profiles = instance.addon_profiles
+    if key_vault_id is not None and ca_cert_object_name is not None and ca_key_object_name is not None and root_cert_object_name is not None and cert_chain_object_name is not None:
+        if not addon_profiles or not addon_profiles[CONST_AZURE_KEYVAULT_SECRETS_PROVIDER_ADDON_NAME] or not addon_profiles[CONST_AZURE_KEYVAULT_SECRETS_PROVIDER_ADDON_NAME].enabled:
+            raise CLIError('AzureKeyvaultSecretsProvider addon is required for Azure Service Mesh plugin certificate authority feature.')
+
+    return _aks_mesh_update(cmd,
+                            client,
+                            resource_group_name,
+                            name,
+                            key_vault_id,
+                            ca_cert_object_name,
+                            ca_key_object_name,
+                            root_cert_object_name,
+                            cert_chain_object_name,
+                            enable_azure_service_mesh=True)
+
+
+def aks_mesh_disable(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+):
+    return _aks_mesh_update(cmd, client, resource_group_name, name, disable_azure_service_mesh=True)
+
+
+def aks_mesh_enable_ingress_gateway(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        ingress_gateway_type,
+):
+    return _aks_mesh_update(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        enable_azure_service_mesh=True,
+        enable_ingress_gateway=True,
+        ingress_gateway_type=ingress_gateway_type)
+
+
+def aks_mesh_disable_ingress_gateway(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        ingress_gateway_type,
+):
+    return _aks_mesh_update(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        disable_ingress_gateway=True,
+        ingress_gateway_type=ingress_gateway_type)
+
+
+def aks_mesh_enable_egress_gateway(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        egx_gtw_nodeselector,
+):
+    return _aks_mesh_update(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        enable_azure_service_mesh=True,
+        enable_egress_gateway=True,
+        egx_gtw_nodeselector=egx_gtw_nodeselector)
+
+
+def aks_mesh_disable_egress_gateway(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+):
+    return _aks_mesh_update(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        enable_azure_service_mesh=True,
+        disable_egress_gateway=True,
+        egx_gtw_nodeselector=None)
+
+
+def _aks_mesh_update(
+        cmd,
+        client,
+        resource_group_name,
+        name,
+        key_vault_id=None,
+        ca_cert_object_name=None,
+        ca_key_object_name=None,
+        root_cert_object_name=None,
+        cert_chain_object_name=None,
+        enable_azure_service_mesh=None,
+        disable_azure_service_mesh=None,
+        enable_ingress_gateway=None,
+        disable_ingress_gateway=None,
+        ingress_gateway_type=None,
+        enable_egress_gateway=None,
+        egx_gtw_nodeselector=None,
+        disable_egress_gateway=None,
+):
+    raw_parameters = locals()
+
+    from azure.cli.command_modules.acs._consts import DecoratorEarlyExitException
+    from azext_aks_preview.managed_cluster_decorator import AKSPreviewManagedClusterUpdateDecorator
+
+    aks_update_decorator = AKSPreviewManagedClusterUpdateDecorator(
+        cmd=cmd,
+        client=client,
+        raw_parameters=raw_parameters,
+        resource_type=CUSTOM_MGMT_AKS_PREVIEW,
+    )
+
+    try:
+        mc = aks_update_decorator.update_mc_profile_default()
+        mc = aks_update_decorator.update_azure_service_mesh_profile(mc)
+    except DecoratorEarlyExitException:
+        return None
+
+    return aks_update_decorator.update_mc(mc)

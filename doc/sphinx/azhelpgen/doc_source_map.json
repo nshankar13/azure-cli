@@ -10,7 +10,7 @@
     "appconfig": "src/azure-cli/azure/cli/command_modules/appconfig/_help.py",
     "appservice": "src/azure-cli/azure/cli/command_modules/appservice/_help.py",
     "aro": "src/azure-cli/azure/cli/command_modules/aro/_help.py",
-    "az": "src/azure-cli/azure/cli/command_modules/profile/_help.py",
+    "az": "src/azure-cli/azure/cli/command_modules/az/_help.py",
     "backup": "src/azure-cli/azure/cli/command_modules/backup/_help.py",
     "batch": "src/azure-cli/azure/cli/command_modules/batch/_help.py",
     "batchai": "src/azure-cli/azure/cli/command_modules/batchai/_help.py",

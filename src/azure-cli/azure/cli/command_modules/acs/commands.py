@@ -157,3 +157,33 @@ def load_command_table(self, _):
                          confirmation='Be careful that rotate oidc issuer signing keys twice within short period' +
                          ' will invalidate service accounts token immediately. Please refer to doc for details.\n' +
                          'Are you sure you want to perform this operation?')
+    
+    # AKS mesh commands
+    with self.command_group('aks mesh', managed_clusters_sdk, client_factory=cf_managed_clusters) as g:
+        g.custom_command(
+            'enable',
+            'aks_mesh_enable',
+            supports_no_wait=True)
+        g.custom_command(
+            'disable',
+            'aks_mesh_disable',
+            supports_no_wait=True,
+            confirmation=True)
+        g.custom_command(
+            'enable-ingress-gateway',
+            'aks_mesh_enable_ingress_gateway',
+            supports_no_wait=True)
+        g.custom_command(
+            'enable-egress-gateway',
+            'aks_mesh_enable_egress_gateway',
+            supports_no_wait=True)
+        g.custom_command(
+            'disable-ingress-gateway',
+            'aks_mesh_disable_ingress_gateway',
+            supports_no_wait=True,
+            confirmation=True)
+        g.custom_command(
+            'disable-egress-gateway',
+            'aks_mesh_disable_egress_gateway',
+            supports_no_wait=True,
+            confirmation=True)
